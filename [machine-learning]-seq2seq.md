@@ -22,3 +22,5 @@ pip install -e .
 
 #### Tutorial
 
+[todo] https://google.github.io/seq2seq/nmt/
+
