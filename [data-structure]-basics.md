@@ -2,6 +2,8 @@
 
 This list is meant to be a both a quick guide and reference for further research into these topics.  It's basically a summary of that comp sci course you never took or forgot about, so there's no way it can cover everything in depth.
 
+More here: https://algs4.cs.princeton.edu/cheatsheet/
+
 ------
 
 [TOC]
