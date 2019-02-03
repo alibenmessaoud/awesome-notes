@@ -311,3 +311,19 @@ By default, the index operation will wait on the primary shard to become availab
 
 **URI Search**
 
+q, lenient, fields, sort, timeout, terminate_after, from, size;
+
+**Request Body Search** 
+
+`POST http://localhost:9200/schools/_search`
+
+```json
+{
+   "query":{
+      "query_string":{
+         "query":"up"
+      }
+   }
+}
+```
+
