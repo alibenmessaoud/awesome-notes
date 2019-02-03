@@ -311,9 +311,22 @@ By default, the index operation will wait on the primary shard to become availab
 
 **URI Search**
 
+ 
 q, lenient, fields, sort, timeout, terminate_after, from, size;
 
 **Request Body Search** 
+=======
+Many parameters can be passed in a search operation using Uniform Resource Identifier.
+
+- q: to specify a query string
+- fields: get response for selective fields
+- sort: fieldName:asc/fieldname:desc
+- timeout: search time by using this parameter and response only contains the hits in that specified time
+- from: The starting from index of the hits to return. Defaults to 0.
+- size: It denotes the number of hits to return. Defaults to 10.
+
+**Request Body Search**
+ 
 
 `POST http://localhost:9200/schools/_search`
 
@@ -322,6 +335,86 @@ q, lenient, fields, sort, timeout, terminate_after, from, size;
    "query":{
       "query_string":{
          "query":"up"
+      }
+   }
+}
+```
+=======
+### Aggregations
+
+### Index API
+
+**Create Index**
+
+`POST http://localhost:9200/colleges` +`{}` => `{"acknowledged":true}`
+
+`POST http://localhost:9200/colleges` + `{ "settings" : { "index" : { "number_of_shards" : 5, "number_of_replicas" : 3 } } }`  => `{"acknowledged":true}`
+
+and some other configurations ...
+
+**Delete index**
+
+`DELETE http://localhost:9200/colleges` 
+
+You can delete all indices by just using _all,*.
+
+**Get Index**
+
+`GET http://localhost:9200/schools` 
+
+**Index Exist**
+If the HTTP response is 200, it exists; if it is 404, it does not exist.
+
+**Open / Close Index API**
+
+`POST http://localhost:9200/schools/{op}`; `op` can be `_close` or `_open`
+
+It means lock and unclock w/r; 
+
+**Index Aliases**
+
+`POST http://localhost:9200/_aliases` + `{"actions":[{"add":{"index":"schools","alias":"schools_pri"}}]}`
+
+`GET http://localhost:9200/schools_pri` gives `{"schools":{"aliases":{"schools_pri":{}},"}}`
+
+**Index settings**
+
+`GET http://localhost:9200/schools/_settings`
+
+**Analyze**
+
+`POST http://localhost:9200/_analyze` + `{ "analyzer" : "standard", "text" : "you are reading this at tutorials point" }`
+
+```json
+{
+   "tokens":[
+      {"token":"you", "start_offset":0, "end_offset":3, "type":"<ALPHANUM>", "position":0},
+      {"token":"are", "start_offset":4, "end_offset":7, "type":"<ALPHANUM>", "position":1},
+      {"token":"reading", "start_offset":8, "end_offset":15, "type":"<ALPHANUM>", "position":2},
+      {"token":"this", "start_offset":16, "end_offset":20, "type":"<ALPHANUM>", "position":3},
+      {"token":"at", "start_offset":21, "end_offset":23, "type":"<ALPHANUM>", "position":4},
+      {"token":"tutorials", "start_offset":24, "end_offset":33, "type":"<ALPHANUM>", "position":5},
+      {"token":"point", "start_offset":34, "end_offset":39, "type":"<ALPHANUM>", "position":6}
+   ]
+}
+```
+
+**Index Templates**
+
+You can also create index templates with mappings, which can be applied to new indices. 
+
+`POST http://localhost:9200/_template/template_a` 
+
+```json
+{
+   "template" : "tu*", 
+      "settings" : {
+         "number_of_shards" : 3
+   },
+	
+   "mappings" : {
+      "chapter" : {
+         "_source" : { "enabled" : false }
       }
    }
 }
