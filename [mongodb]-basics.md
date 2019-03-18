@@ -115,3 +115,32 @@ The following table presents the various SQL statements related to deleting reco
 | `DELETE FROM users WHERE status = "D" ` | `db.users.remove( { status: "D" } ) ` | See [`remove()`](https://gist.github.com/method/db.collection.remove/#db.collection.remove) for more information. |
 | `DELETE FROM users `                    | `db.users.remove( ) `                 | See [`remove()`](https://gist.github.com/method/db.collection.remove/#db.collection.remove) for more information. |
 
+### Useful commands
+
+Start and stop services`sudo service mongod start` `sudo service mongod stop`
+
+Connect to a database `mongo --host localhost:27017`
+
+Show full list of databases: `show dbs;`
+Create or change to another db: `use [dbname];`
+
+Add a collection `db.createCollection("user")`
+
+`show collections` and `show collections`
+
+Basic count: `db.[collection].count({QUERY});`
+Output find with nice formatting: `db.[collection].findOne({QUERY});` 
+`db.[collection].find().pretty()`
+Find distinct values for X: `db.[collection].distinct(X, {QUERY});`
+
+Update one record: `db.[collection].update({QUERY}, {$set: {UPDATE_QUERY}});`
+Update all records that fit the criteria: `db.[collection].update({QUERY}, {$set: {UPDATE_QUERY}}, false, true);`
+
+Remove records from a collection: `db.[collection].remove({QUERY});`
+Remove an entire collection: `db.[collection].drop();`
+Fully delete a database:
+`use [dbname];`
+`db.dropDatabase();`
+
+Show all current operations/queries/syncs: `db.currentOp();`
+
