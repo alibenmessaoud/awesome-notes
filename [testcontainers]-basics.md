@@ -37,7 +37,7 @@ Add maven dependency
 <dependency>
     <groupId>org.testcontainers</groupId>
     <artifactId>testcontainers</artifactId>
-    <version>1.8.0</version>
+    <version>1.10.5</version>
 </dependency>
 ```
 
@@ -221,6 +221,84 @@ public class MongoAppTest {
       assertEquals(1, doc2.get("value"));
    }
 
+}
+```
+
+## PostgreSQL DB
+
+Add Maven dependencies
+
+```
+   <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>1.10.5</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>9.1-901-1.jdbc4</version>
+    </dependency>
+```
+
+The test goes as follows
+
+```
+package tc.app;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.testcontainers.containers.PostgreSQLContainer;
+
+public class PGAppTest {
+
+   private static PostgreSQLContainer pgc =
+         new PostgreSQLContainer("postgres:10.4")
+               .withDatabaseName("postgres")
+               .withUsername("postgres")
+               .withPassword("postgres123");
+
+   Connection conn;
+
+   @Before
+   public void setUp() throws Exception {
+      pgc.start();
+      int port = pgc.getFirstMappedPort();
+      System.setProperty(
+            "spring.datasource.url",
+            String.format("jdbc:postgresql://localhost:%d/postgres",port)
+      );
+
+      conn = DriverManager.getConnection(
+            pgc.getJdbcUrl(),
+            pgc.getUsername(), pgc.getPassword()
+      );
+
+      conn.createStatement().execute("CREATE TABLE t (n VARCHAR(40));");
+      conn.createStatement().execute("INSERT INTO t (n) VALUES ('hello');");
+   }
+
+   @After
+   public void tearDown() {
+      pgc.stop();
+   }
+
+   @Test
+   public void test() throws SQLException {
+      ResultSet rs = conn.createStatement().executeQuery("select n from t");
+      while(rs.next()){
+         String n = rs.getString("n");
+         System.out.println(n);
+      }
+      rs.close();
+      conn.close();
+   }
 }
 ```
 
