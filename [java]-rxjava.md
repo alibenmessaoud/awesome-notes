@@ -171,3 +171,53 @@ source.map(String::length).filter(i -> i >= 5).subscribe(
  */
 ```
 
+##### Cold/Hot Observable
+
+```java
+/**
+ * Cold Observable works much like a music CD. Play it.
+ * Cold Observables will replay the emissions to each Observer, ensuring that all Observers 
+ * get all the data.
+ * Observable.just() and Observable.fromIterable() factories are cold.
+ * => Observable sources that emit finite datasets are usually cold
+ */
+Observable<String> source = Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon");
+source.subscribe(s -> System.out.println("Observer 1 Received:  " + s));
+source.subscribe(s -> System.out.println("Observer 2 Received: " + s));
+
+/**
+ * Using operators such as map() and filter() against a cold Observable will still
+ * maintain the cold nature of the yielded Observables.
+ */
+```
+
+```java
+/**
+ * Dave Moten's RxJava-JDBC allows you to create cold Observables built off of SQL database queries.
+ * (https://github.com/davidmoten/rxjava-jdbc)
+ */
+/**
+ * ➜  rxjava-tutorial sqlite3 rexon_metals.db
+ * SQLite version 3.26.0 2018-12-01 12:34:55
+ * Enter ".help" for usage hints.
+ * sqlite> CREATE TABLE contacts (
+ *    ...>  contact_id INTEGER PRIMARY KEY,
+ *    ...>  first_name TEXT NOT NULL,
+ *    ...>  last_name TEXT NOT NULL,
+ *    ...>  email text NOT NULL UNIQUE,
+ *    ...>  phone text NOT NULL UNIQUE
+ *    ...> );
+ * sqlite> insert into contacts (first_name, last_name, email, phone) values ("ali", "bm", "mail", "911");
+ * sqlite> select * from contacts;
+ * 1|ali|ben messaoud|mail|911
+ */
+Connection conn = new ConnectionProviderFromUrl("jdbc:sqlite:/path/rexon_metals.db").get();
+Database db = Database.from(conn);
+rx.Observable<String> customerNames = db.select("SELECT FIRST_NAME FROM CONTACTS").getAs(String.class);
+customerNames.subscribe(s -> System.out.println(s));
+
+/**
+ * This SQL-driven Observable is cold.
+ * RxJava-JDBC will run the query each time for each Observer.
+ */
+```
