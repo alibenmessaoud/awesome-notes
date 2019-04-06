@@ -70,7 +70,8 @@ source.subscribe(s -> System.out.println("RECEIVED: " + s));
 ```
 
 ```java
-// we can catch errors that may occur within our Observable.create() block and emit them through onError().
+// we can catch errors that may occur within our Observable.create() block 
+// and emit them through onError().
 // error can be handled by the Observer;
 Observable<String> source = Observable.create(emitter -> {
     try {
@@ -87,7 +88,8 @@ source.subscribe(s -> System.out.println("RECEIVED: " + s), Throwable::printStac
 
 ```java
 // derive new Observables with the map() and filter() operators
-// With the map() and filter() operators between the source Observable and Observer, onNext() will hand each item to the  map() operator.
+// With the map() and filter() operators between the source Observable and Observer, onNext() will hand
+// each item to the  map() operator.
 // It acts as an intermediary Observer
 Observable<String> source = Observable.create(emitter -> {
     try {
@@ -106,7 +108,8 @@ filtered.subscribe(s -> System.out.println("RECEIVED: " + s));
 ```java
 // will not need to use Observable.create() often
 // helpful in hooking into certain sources that are not reactive
-// It will invoke the onNext() call for each one and then invoke onComplete() when they all have been pushed:
+// It will invoke the onNext() call for each one and then invoke onComplete() when 
+// they all have been pushed:
 Observable<String> source1 = Observable.just("Lol", "Beta", "Gamma", "Delta", "Epsilon");
 source1.map(String::length).filter(i -> i >= 5).subscribe(s -> System.out.println("RECEIVED: " + s));
 // Same for a list
@@ -122,7 +125,8 @@ source2.map(String::length).filter(i -> i <= 5).subscribe(s -> System.out.printl
     void onComplete();
 }*/
 // a source Observable is where your Observable chain starts and where emissions originate.
-// It does not know whether the next Observer is another operator or the final Observer at the end of the chain.
+// It does not know whether the next Observer is another operator or the final Observer 
+// at the end of the chain.
 
 Observable<String> source = Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon");
 
@@ -156,10 +160,11 @@ source.map(String::length).filter(i -> i >= 5).subscribe(
 );
 
 /**
- * It is critical to note that most of the subscribe() overload variants (including the shorthand lambda ones
- * we just covered) return a Disposable that we did not do anything with. disposables allow us to disconnect
- * an Observable from an Observer so emissions are terminated early, which is critical for infinite
- * or long-running Observables. We will cover disposables at the end of this chapter.
+ * It is critical to note that most of the subscribe() overload variants (including the shorthand 
+ * lambda ones we just covered) return a Disposable that we did not do anything with. disposables 
+ * allow us to disconnect an Observable from an Observer so emissions are terminated early, which
+ * is critical for infinite or long-running Observables. We will cover disposables at the end of 
+ * this chapter.
  */
 /**
  * Can use retry() operators to attempt recovery and resubscribe to an Observable if an error occurs.
