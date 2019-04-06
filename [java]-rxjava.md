@@ -221,3 +221,235 @@ customerNames.subscribe(s -> System.out.println(s));
  * RxJava-JDBC will run the query each time for each Observer.
  */
 ```
+
+##### More Factories
+
+```java
+/**
+ * Note that there is also a long equivalent called Observable.rangeLong() if you need to emit larger numbers.
+ */
+Observable.range(1, 10).subscribe(s -> System.out.println("RECEIVED: " + s));
+
+/**
+ * Automatic one appearance;
+ */
+/**
+ * RECEIVED: 1
+ * RECEIVED: 2
+ * RECEIVED: 3
+ * RECEIVED: 4
+ * RECEIVED: 5
+ * RECEIVED: 6
+ * RECEIVED: 7
+ * RECEIVED: 8
+ * RECEIVED: 9
+ * RECEIVED: 10
+ */
+```
+
+```java
+/**
+ * Observables have a concept of emissions over time.
+ * Emissions are handed from the source up to the Observer sequentially.
+ * But these emissions can be spaced out over time depending on when the source provides them.
+ */
+
+/**
+ * Observable.interval() will emit infinitely at the specified interval (which is 1 second in this case).
+ */
+Observable.interval(1, TimeUnit.SECONDS).subscribe(s -> System.out.println(s + " Word "));
+Thread.sleep(3000);
+
+/**
+ * Shows with a delay of 1s
+ */
+/**
+ * 0 Word
+ * 1 Word
+ * 2 Word
+ */
+```
+
+```java
+/**
+ * does Observable.interval() return a hot or a cold Observable?
+ */
+Observable<Long> seconds = Observable.interval(1, TimeUnit.SECONDS);
+seconds.subscribe(l -> System.out.println("Observer 1: " + l));
+Thread.sleep(3000);
+seconds.subscribe(l -> System.out.println("Observer 2: " + l));
+Thread.sleep(3000);
+
+/**
+ * Observer 1: 0 <- starts from 0
+ * Observer 1: 1
+ * Observer 1: 2
+ * Observer 1: 3
+ * Observer 2: 0 <- starts from 0 so cold
+ * Observer 1: 4 <- continues counting
+ * Observer 2: 1
+ * Observer 1: 5
+ * Observer 2: 2
+ */
+
+/**
+ * These two observers are actually getting their own emissions, each starting at 0. So this
+ * Observable is actually cold.
+ */
+```
+
+```java
+ConnectableObservable<Long> seconds = Observable.interval(1, TimeUnit.SECONDS).publish();
+seconds.subscribe(l -> System.out.println("Observer 1: " + l));
+seconds.connect();
+Thread.sleep(3000);
+seconds.subscribe(l -> System.out.println("Observer 2: " + l));
+Thread.sleep(3000);
+
+/**
+ * Observer 1: 0
+ * Observer 1: 1
+ * Observer 1: 2
+ * Observer 1: 3
+ * Observer 2: 3
+ * Observer 1: 4
+ * Observer 2: 4
+ * Observer 1: 5
+ * Observer 2: 5
+ */
+
+// ConnectableObservable makes cold hot;
+```
+
+```java
+/**
+ * if you have existing libraries that yield Futures, you can easily turn them into Observables
+ * via Observable.future():
+ */
+Future<String> futureValue = Executors.newSingleThreadExecutor()
+        .submit(
+                () -> {
+                    Thread.sleep(1000);
+                    return "ali";
+                }
+        );
+Observable.fromFuture(futureValue).map(String::length).subscribe(System.out::println);
+
+/**
+ * 3
+ */
+```
+
+```java
+/**
+ * Emits nothing and calls onComplete():
+ */
+Observable<String> empty = Observable.empty();
+empty.subscribe(System.out::println, error -> System.out.println(error), () -> System.out.println("Done!"));
+
+/**
+ * Done!
+ */
+```
+
+```java
+/**
+ * A close cousin of Observable.empty() is Observable.never().
+ * The only difference between them is that it never calls onComplete(),
+ * forever leaving observers waiting for emissions but never actually giving any
+ */
+Observable<String> empty = Observable.never();
+
+empty.subscribe(System.out::println, e -> System.out.println(e), () -> System.out.println("Done!"));
+
+/**
+ * This Observable is primarily used for testing and not that often in production.
+ */
+```
+
+```java
+Observable.error(new Exception("Crash and burn!"))
+        .subscribe(
+                i -> System.out.println("RECEIVED: " + i),
+                System.out::println,
+                () -> System.out.println("Done!")
+        );
+
+/**
+ * java.lang.Exception: Crash and burn!
+ * at E01Runnable.lambda$main$0(E01Runnable.java:7)
+ * at io.reactivex.internal.operators.observable.
+ *   ObservableError.subscribeActual(ObservableError.java:32)
+ * at io.reactivex.Observable.subscribe(Observable.java:10514)
+ * at io.reactivex.Observable.subscribe(Observable.java:10500)
+ */
+
+/**
+ * You can also provide the exception through a lambda so that it is created
+ * from scratch and separate exception instances are provided to each Observer:
+ */
+Observable.error(() -> new Exception("Crash and burn!"));
+```
+
+```java
+/**
+ * Observable.defer() is a powerful factory due to its ability to create a separate state for each Observer.
+ * When using certain Observable factories, you may run into some nuances if your source is stateful
+ * and you want to create a separate state for each Observer. Your source Observable may not capture something
+ * that has changed about its parameters and send emissions that are obsolete. Here is a simple example:
+ * we have an Observable.range() built off two static int properties, start and count.
+ */
+
+Observable<Integer> source = Observable.range(start, count);
+
+source.subscribe(i -> System.out.println("Observer 1: " + i));
+count = 5;
+source.subscribe(i -> System.out.println("Observer 2: " + i));
+
+/**
+ * Observer 1: 1
+ * Observer 1: 2
+ * Observer 1: 3
+ * Observer 2: 1
+ * Observer 2: 2
+ * Observer 2: 3
+ */
+
+Observable<Integer> sourceWithDefer = Observable.defer(() -> Observable.range(start, count));
+sourceWithDefer.subscribe(i -> System.out.println("Observer 1: " + i));
+//modify count
+count = 5;
+sourceWithDefer.subscribe(i -> System.out.println("Observer 2: " + i));
+
+/**
+ * Observer 1: 1
+ * Observer 1: 2
+ * Observer 1: 3
+ * Observer 2: 1
+ * Observer 2: 2
+ * Observer 2: 3
+ * Observer 2: 4
+ * Observer 2: 5
+ */
+```
+
+```java
+Observable.just(1 / 0).subscribe(
+        i -> System.out.println("RECEIVED: " + i),
+        e -> System.out.println("Error Captured: " + e)
+);
+/**
+ * Exception in thread "main" java.lang.ArithmeticException: / by zero
+ *     at E01Runnable.main(E01Runnable.java:6)
+ *     at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+ */
+
+Observable.fromCallable(() -> 1 / 0).subscribe(
+        i -> System.out.println("Received: " + i),
+        e -> System.out.println("Error Captured: " + e)
+);
+/**
+ * Error Captured: java.lang.ArithmeticException: / by zero
+ */
+```
+
