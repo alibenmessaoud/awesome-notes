@@ -566,3 +566,104 @@ Completable.fromRunnable(() -> { /* do something */ }).subscribe(() -> System.ou
  */
 ```
 
+##### Disposing
+
+When you subscribe() to an Observable to receive emissions, a stream is created to process these emissions through the Observable chain.
+=> this uses resources.
+=> dispose of these resources so that they can be garbage-collected
+
+As a matter of fact, you cannot trust the garbage collector to take care of active and no needed subscriptions
+
+```java
+public interface Disposable {
+ void dispose();
+ boolean isDisposed();
+}
+```
+
+```java
+Observable<Long> seconds = Observable.interval(1, TimeUnit.SECONDS);
+
+Disposable disposable = seconds.subscribe(l -> System.out.println("Received: " + l));
+
+sleep(3000);
+
+//dispose and stop emissions
+disposable.dispose();
+
+//sleep 3 seconds to prove
+//there are no test emissions
+sleep(3000);
+```
+
+```java
+Observable<Long> source = Observable.interval(1, TimeUnit.SECONDS);
+
+Observer<Integer> myObserver = new Observer<Integer>() {
+    private Disposable disposable;
+
+    @Override
+    public void onSubscribe(Disposable disposable) {
+        this.disposable = disposable;
+    }
+
+    @Override
+    public void onNext(Integer value) {
+        //has access to Disposable
+    }
+
+    @Override
+    public void onError(Throwable e) {
+        //has access to Disposable
+    }
+
+    @Override
+    public void onComplete() {
+        //has access to Disposable
+    }
+};
+
+/**
+ * Disposable disposable = source.subscribeWith(myObserver);
+ */
+```
+
+```java
+private static final CompositeDisposable disposables = new CompositeDisposable();
+```
+
+```java
+Observable<Long> seconds = Observable.interval(1, TimeUnit.SECONDS);
+
+Disposable disposable1 = seconds.subscribe(l -> System.out.println("Observer 1: " + l));
+Disposable disposable2 = seconds.subscribe(l -> System.out.println("Observer 2: " + l));
+
+//put both disposables into CompositeDisposable
+disposables.addAll(disposable1, disposable2);
+
+sleep(2000);
+//dispose all disposables
+disposables.dispose();
+
+//check there are no test emissions
+sleep(1000);
+```
+
+```java
+Observable<Integer> source = Observable.create(observableEmitter -> {
+    try {
+        for (int i = 0; i < 1000; i++) {
+            while (!observableEmitter.isDisposed()) {
+                observableEmitter.onNext(i);
+            }
+            if (observableEmitter.isDisposed())
+                return;
+        }
+        observableEmitter.onComplete();
+    } catch (Throwable e) {
+        observableEmitter.onError(e);
+    }
+});
+source.subscribe(System.out::println);
+```
+
