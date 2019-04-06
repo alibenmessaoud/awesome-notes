@@ -453,3 +453,116 @@ Observable.fromCallable(() -> 1 / 0).subscribe(
  */
 ```
 
+##### Single, Maybe, and Completable.
+
+There are a few specialized flavors of Observable that are explicitly set up for one or no emissions:
+-> Single, Maybe, and Completable.
+
+```java
+/**
+ * Single<T> is essentially an Observable<T> that will only emit one item.
+ * It works just like an Observable, but it is limited only to operators that make sense for a single emission.
+ * It has its own SingleObserver interface as well:
+ *
+ * interface SingleObserver<T> {
+ *     void onSubscribe(Disposable d);
+ *     void onSuccess(T value);
+ *     void onError(Throwable error);
+ * }
+ */
+
+Single.just("Hello").map(String::length).subscribe(System.out::println, Throwable::printStackTrace);
+/**
+ * Hello
+ */
+Observable<String> source = Observable.just("Alpha","Beta","Gamma");
+Single<String> nil = source.first("Nothing");
+nil.subscribe(System.out::println, System.out::println);
+/**
+ * Alpha
+ */
+
+/**
+ * The Single must have one emission, and you should prefer it if you only have one emission to provide;
+ * instead of using Observable.just("Alpha"), you should try to use Single.just("Alpha") instead
+ */
+
+/**
+ * There are operators on Single that will allow you to turn it into an Observable when needed,
+ * such as toObservable().
+ */
+
+/**
+ * If there are 0 or 1 emissions, you will want to use Maybe.
+ */
+```
+
+```java
+/**
+ * Maybe is just like a Single except that it allows no emission to occur at all (hence Maybe).
+ * MaybeObserver is much like a standard Observer, but onNext() is called onSuccess() instead:
+ * public interface MaybeObserver<T> {
+ *    void onSubscribe(Disposable d);
+ *    void onSuccess(T value);
+ *    void onError(Throwable e);
+ *    void onComplete();
+ * }
+ */
+
+/**
+ * A given Maybe<T> will only emit 0 or  1 emissions.
+ * Maybe.empty() will create a Maybe that yields no emission:
+ */
+
+// has emission
+Maybe.just(100).subscribe(s -> System.out.println("Process 1 received: " + s), Throwable::printStackTrace, () -> System.out.println("Process 1 done!"));
+
+//no emission
+Maybe.empty().subscribe(s -> System.out.println("Process 2 received: " + s), Throwable::printStackTrace, () -> System.out.println("Process 2 done!"));
+
+/**
+ * Process 1 received: 100
+ * Process 2 done!
+ */
+```
+
+```java
+/**
+ * the firstElement() operator, which is similar to first(), but it returns an empty result if no elements are emitted:
+ */
+
+Maybe<String> stringMaybe = Observable.just("Alpha","Beta","Gamma","Delta","Epsilon").firstElement();
+stringMaybe.subscribe(
+        s -> System.out.println("RECEIVED " + s),
+        Throwable::printStackTrace,
+        () -> System.out.println("Done!")
+);
+
+/**
+ * RECEIVED Alpha
+ */
+```
+
+```java
+/**
+ * Completable is simply concerned with an action being executed, but it does not receive any emissions.
+ * Logically, it does not have onNext() or onSuccess() to receive emissions, but it does have onError() and onComplete():
+ *
+ * interface CompletableObserver<T> {
+ *     void onSubscribe(Disposable d);
+ *     void onComplete();
+ *     void onError(Throwable error);
+ * }
+ */
+
+/**
+ * Completable is something you likely will not use often.
+ */
+
+Completable.fromRunnable(() -> { /* do something */ }).subscribe(() -> System.out.println("Done!"));
+
+/**
+ * Done!
+ */
+```
+
