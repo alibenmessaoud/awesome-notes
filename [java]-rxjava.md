@@ -1492,3 +1492,194 @@ RECEIVED: Gamma
 **/
 ```
 
+```java
+//emit every 1 second
+Observable<String> source1 = Observable.interval(1, TimeUnit.SECONDS)
+        .map(l -> l + 1) // emit elapsed seconds
+        .map(l -> "Source1: " + l + " seconds");
+
+//emit every 300 milliseconds
+Observable<String> source2 = Observable.interval(300, TimeUnit.MILLISECONDS)
+        .map(l -> (l + 1) * 300) // emit elapsed milliseconds
+        .map(l -> "Source2: " + l + " milliseconds");
+
+//merge and subscribe
+Observable.merge(source1, source2).subscribe(System.out::println);
+
+//keep alive for 3 seconds
+sleep(3000);
+```
+
+```java
+Observable<String> source = Observable.just("Ali", "Ben M.");
+source.flatMap(s -> Observable.fromArray(s.split(""))).subscribe(System.out::println);
+
+/**
+ * A
+ * l
+ * i
+ * B
+ * e
+ * n
+ *
+ * M
+ * .
+ */
+```
+
+```java
+Observable<String> source =
+        Observable.just("521934/2342/FOXTROT", "21962/12112/78886/TANGO", "283242/4542/WHISKEY/2348562");
+
+source.flatMap(s -> Observable.fromArray(s.split("/")))
+        .filter(s -> s.matches("[0-9]+")) //use regex to filter integers
+        .map(Integer::valueOf)
+        .subscribe(System.out::println);
+
+/**
+ * 521934
+ * 2342
+ * 21962
+ * 12112
+ * 78886
+ * 283242
+ * 4542
+ * 2348562
+ */
+```
+
+```java
+Observable<Integer> intervalArguments = Observable.just(2, 3, 10, 7);
+
+intervalArguments
+        .flatMap(
+            i -> Observable
+                    .interval(i, TimeUnit.SECONDS)
+                    .map(j -> i + "s interval: " + ((i + 1) * i) + " seconds elapsed")
+        ).subscribe(System.out::println);
+
+sleep(12000);
+```
+
+```java
+Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
+        .flatMap(s -> Observable.fromArray(s.split("")), (s,r) -> s + "-" + r)
+        .subscribe(System.out::println);
+
+/**
+ * Alpha-A
+ * Alpha-l
+ * Alpha-p
+ * Alpha-h
+ * Alpha-a
+ * Beta-B
+ * Beta-e
+ */
+```
+
+```java
+Observable<String> source = Observable.just("Alpha", "Beta");
+source.concatMap(s -> Observable.fromArray(s.split(""))).subscribe(System.out::println);
+
+/**
+ * A
+ * l
+ * p
+ * h
+ * a
+ * B
+ * e
+ * ..
+ */
+```
+
+```java
+/**
+ * The Observable.amb() factory (amb stands for ambiguous) will accept an Iterable<Observable<T>>
+ * and emit the emissions of the first Observable that emits, while the others are disposed of.
+ */
+
+/**
+ * Here, we have two interval sources and we combine them with the Observable.amb() factory.
+ * If one emits every second while the other every 300 milliseconds,
+ * the latter is going to win because it will emit first:
+ */
+
+//emit every second
+Observable<String> source1 = Observable.interval(1, TimeUnit.SECONDS)
+                .take(2)
+                .map(l -> l + 1) // emit elapsed seconds
+                .map(l -> "Source1: " + l + " seconds");
+
+
+//emit every 300 milliseconds
+Observable<String> source2 = Observable.interval(300, TimeUnit.MILLISECONDS)
+                .map(l -> (l + 1) * 300) // emit elapsed milliseconds
+                .map(l -> "Source2: " + l + " milliseconds");
+
+
+//emit Observable that emits first
+Observable.amb(Arrays.asList(source1, source2)).subscribe(i -> System.out.println("RECEIVED: " + i));
+
+//keep application alive for 5 seconds
+sleep(5000);
+
+/**
+ * RECEIVED: Source2: 300 milliseconds
+ * RECEIVED: Source2: 600 milliseconds
+ * RECEIVED: Source2: 900 milliseconds
+ * RECEIVED: Source2: 1200 milliseconds
+ * RECEIVED: Source2: 1500 milliseconds
+ * ...
+ */
+
+source1.ambWith(source2);
+```
+
+```java
+Observable<String> source1 = Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon");
+Observable<Integer> source2 = Observable.range(1,10);
+Observable.zip(source1, source2, (s1,s2) -> s1 + "-" + s2).subscribe(System.out::println);
+
+/**
+ * Alpha-1
+ * Beta-2
+ * Gamma-3
+ * Delta-4
+ * Epsilon-5
+ */
+
+source1.zipWith(source2, (s,i) -> s + "-" + i);
+```
+
+```java
+Observable<String> source = Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon");
+Observable<GroupedObservable<Integer,String>> byLengths = source.groupBy(s -> s.length());
+byLengths.flatMapSingle(grp -> grp.toList()).subscribe(System.out::println);
+
+/**
+ * [Beta]
+ * [Alpha, Gamma, Delta]
+ * [Epsilon]
+ */
+```
+
+```java
+Observable<String> source = Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon");
+
+Observable<GroupedObservable<Integer,String>> byLengths = source.groupBy(s -> s.length());
+
+byLengths.flatMapSingle(
+        g -> g.reduce("", (x,y) -> x.equals("") ? y : x + ", " + y)
+                .map(s -> g.getKey() + ": " + s)
+).subscribe(System.out::println);
+
+/**
+ * 4: Beta
+ * 5: Alpha, Gamma, Delta
+ * 7: Epsilon
+ */
+```
+
+
+
