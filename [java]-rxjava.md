@@ -1681,5 +1681,342 @@ byLengths.flatMapSingle(
  */
 ```
 
+##### Multicasting, replay and cache
 
+- multicast is useful to prevent redundant work being done by multiple Observers.
+- multicasting creates hot ConnectableObservables, and you have to be careful and time the connect() call so data is not missed by Observers.
+- One Observer, it is ok, if there are multiple Observers, you need to find the proxy point where you can multicast and consolidate the upstream operations.
+
+```java
+Observable<Integer> src1 = Observable.range(1, 3);
+src1.subscribe(i -> System.out.println("Observer One: " + i));
+src1.subscribe(i -> System.out.println("Observer Two: " + i));
+
+/**
+ * Observer One: 1
+ * Observer One: 2
+ * Observer One: 3
+ * Observer Two: 1
+ * Observer Two: 2
+ * Observer Two: 3
+ * These were two separate streams of data generated for two separate subscriptions.
+ */
+
+/**
+ * Goal: consolidate them into a single stream of data that pushes each emission
+ * to both Observers simultaneously,
+ */
+
+ConnectableObservable<Integer> src2 = Observable.range(1, 3).publish();
+src2.subscribe(i -> System.out.println("Observer One: " + i));
+src2.subscribe(i -> System.out.println("Observer Two: " + i));
+
+src2.connect();
+
+/**
+ * Observer One: 1
+ * Observer Two: 1
+ * Observer One: 2
+ * Observer Two: 2
+ * Observer One: 3
+ * Observer Two: 3
+ */
+```
+
+```java
+Observable<Integer> threeRandoms01 = Observable
+        .range(1, 3)
+        .map(i -> current().nextInt(100000));
+
+threeRandoms01.subscribe(i -> System.out.println("Observer 1: " + i));
+threeRandoms01.subscribe(i -> System.out.println("Observer 2: " + i));
+
+/**
+ * Observer 1: 38895
+ * Observer 1: 36858
+ * Observer 1: 82955
+ * Observer 2: 55957
+ * Observer 2: 47394
+ * Observer 2: 16996
+ *
+ * range() source will yield two separate emission generators, and each will coldly
+ * emit a separate stream for each Observer.
+ * Each stream also has its own separate map() instance, hence each Observer gets
+ * different random integers.
+ */
+
+ConnectableObservable<Integer> cobservableFor02 = Observable
+        .range(1, 3)
+        .publish(); /***/
+Observable<Integer> threeRandoms02 = cobservableFor02.map(i -> current().nextInt(100000));
+
+threeRandoms02.subscribe(i -> System.out.println("Observer 1: " + i));
+threeRandoms02.subscribe(i -> System.out.println("Observer 2: " + i));
+cobservableFor02.connect();
+
+/**
+ * Observer 1: 99350
+ * Observer 2: 96343
+ * Observer 1: 4155
+ * Observer 2: 75273
+ * Observer 1: 14280
+ * Observer 2: 97638
+ * Same result: not the same random
+ */
+
+ConnectableObservable<Integer> threeRandoms03 = Observable
+        .range(1, 3)
+        .map(i -> current().nextInt(100000))
+        .publish(); /** need to call publish() after map() instead **/
+
+threeRandoms03.subscribe(i -> System.out.println("Observer 1: " + i));
+threeRandoms03.subscribe(i -> System.out.println("Observer 2: " + i));
+
+threeRandoms03.connect();
+```
+
+```java
+Observable<Integer> threeRandoms = Observable.range(1, 3)
+        .map(i -> current().nextInt(100000))
+        .publish()
+        .autoConnect();
+
+//Observer 1 - print each random integer
+threeRandoms.subscribe(i -> System.out.println("Observer 1: " + i));
+
+//Observer 2 - sum the random integers, then print
+threeRandoms
+        .reduce(0, (total, next) -> total + next)
+        .subscribe(i -> System.out.println("Observer 2: " + i));
+
+
+/**
+ * .autoConnect(0): it will start firing immediately and not wait for any Observers.
+ */
+
+/**
+ * .autoConnect(1) or .autoConnect() : when one observer comes in
+ * Observer 1: 83428
+ * Observer 1: 77336
+ * Observer 1: 64970
+ */
+
+/**
+ * .autoConnect(2) : when 2 observers come in;
+ * Observer 1: 83428
+ * Observer 1: 77336
+ * Observer 1: 64970
+ * Observer 2: 225734
+ */
+
+/**
+ * .autoConnect(3)
+ */
+
+/**
+ * .autoConnect(2);
+ * + 3 observers
+ * => 3rd misses data
+ */
+
+Observable<Long> seconds = Observable
+        .interval(1, TimeUnit.SECONDS)
+        .publish()
+        .autoConnect(); /** 1st will play it **/
+
+//Observer 1
+seconds.subscribe(i -> System.out.println("Observer 1: " + i));
+sleep(3000);
+//Observer 2
+seconds.subscribe(i -> System.out.println("Observer 2: " + i));
+sleep(3000);
+
+/**
+ * Observer 1: 0
+ * Observer 1: 1
+ * Observer 1: 2
+ * Observer 1: 3
+ * Observer 2: 3
+ * Observer 1: 4
+ * Observer 2: 4
+ * Observer 1: 5
+ * Observer 2: 5
+ */
+```
+
+```java
+/**
+ * The refCount() operator on ConnectableObservable is similar to autoConnect(1), which fires after
+ * getting one subscription. When it has no Observers anymore, it will dispose of itself and start
+ * over when a new one comes in.
+ */
+
+Observable<Long> seconds = Observable
+        .interval(1, TimeUnit.SECONDS)
+        .publish()
+        .refCount(); /* = autoConnect(1) + dispose when no consumers*/
+
+//Observer 1
+seconds.take(5)
+        .subscribe(l -> System.out.println("Observer 1: " + l));
+
+sleep(3000);
+
+//Observer 2
+seconds.take(2)
+        .subscribe(l -> System.out.println("Observer 2: " + l));
+
+sleep(3000);
+//there should be no more Observers at this point
+
+//Observer 3
+seconds.subscribe(l -> System.out.println("Observer 3: " + l));
+
+sleep(3000);
+
+/**
+ * Observer 1: 0
+ * Observer 1: 1
+ * Observer 1: 2
+ * Observer 1: 3
+ * Observer 2: 3
+ * Observer 1: 4
+ * Observer 2: 4
+ * Observer 3: 0
+ * Observer 3: 1
+ * Observer 3: 2
+ */
+
+/**
+ * helpful to multicast between multiple Observers but dispose of the upstream connection
+ * when no downstream Observers are present anymore
+ */
+
+/** publish().refCount() = share()
+ * Observable<Long> seconds = Observable.interval(1, TimeUnit.SECONDS).share();
+ **/
+```
+
+```java
+/**
+ * Replay;
+ * re-emit them when a new Observer comes in
+ */
+
+/** replay() all previous emissions to tardy Observers, and then emit current emissions
+ * as soon as the tardy Observer is caught up.
+ */
+
+Observable<Long> seconds =
+        Observable.interval(1, TimeUnit.SECONDS)
+                .replay()
+                .autoConnect();
+
+//Observer 1
+seconds.subscribe(l -> System.out.println("Observer 1: " + l));
+
+sleep(3000);
+
+//Observer 2
+seconds.subscribe(l -> System.out.println("Observer 2: " + l));
+
+sleep(3000);
+
+/**
+ * Observer 1: 0 <-- Observer 1 came in
+ * Observer 1: 1
+ * Observer 1: 2
+ * Observer 2: 0 <-- Observer 2 came in so source started from 0; this can get expensive with memory
+ * Observer 2: 1
+ * Observer 2: 2
+ * Observer 1: 3 <- same
+ * Observer 2: 3 <- same
+ * Observer 1: 4
+ * Observer 2: 4
+ * Observer 1: 5
+ * Observer 2: 5
+ */
+
+/** replay(n) specify a bufferSize argument to limit only replaying a certain number of last emissions */
+
+/**
+ * .replay(2)
+ * Observer 1: 0
+ * Observer 1: 1
+ * Observer 1: 2
+ * Observer 2: 1 <- Observer came in; it will not get 0, but it will receive 1 and 2
+ * Observer 2: 2
+ * Observer 1: 3
+ * Observer 2: 3
+ * Observer 1: 4
+ * Observer 2: 4
+ * Observer 1: 5
+ * Observer 2: 5
+ */
+
+/**
+ * Note that if you always want to persist the cached values in your replay() even if there are
+ * no subscriptions, use it in conjunction with autoConnect(), not refCount() => you may consider using
+ * autoConnect() to persist the  state of replay() and not have it dispose of when no Observers are present.
+ */
+
+Observable<String> source01 =
+        Observable.just("a", "b", "c", "d", "e")
+                .replay(1)
+                .autoConnect();
+
+//Observer 1
+source01.subscribe(l -> System.out.println("Observer 1: " + l));
+//Observer 2
+source01.subscribe(l -> System.out.println("Observer 2: " + l));
+
+/**
+ * Observer 1: a
+ * Observer 1: b
+ * Observer 1: c
+ * Observer 1: d
+ * Observer 1: e
+ * Observer 2: e
+ */
+
+Observable<String> source02 =
+        Observable.just("a", "b", "c", "d", "e")
+                .replay(1)
+                .refCount();
+
+/**
+ *
+ * What happened here is that refCount() causes the cache (and the entire chain) to dispose
+ * of and reset the moment Observer 1 is done as there are no more Observers.
+ * Observer 1: Alpha
+ * Observer 1: Beta
+ * Observer 1: Gamma
+ * Observer 1: Delta
+ * Observer 1: Epsilon
+ * Observer 2: Alpha <- Observer 2 came in, it starts over like the first Observer, and another cache is built.
+ * Observer 2: Beta     ==> may consider using autoConnect() to persist the  state of replay()
+ * Observer 2: Gamma
+ * Observer 2: Delta
+ * Observer 2: Epsilon
+ */
+```
+
+```java
+/**
+ * to cache all emissions indefinitely for the long term and do not need to control the subscription behavior
+ * to the source with ConnectableObservable, you can use the cache() operator.
+ */
+
+Observable<Integer> cachedRollingTotals =
+        Observable.just(6, 2, 5, 7, 1, 4, 9, 8, 3)
+                .scan(0, (total,next) -> total + next)
+                .cache();
+
+cachedRollingTotals.subscribe(System.out::println);
+
+/**
+ * specify the number of elements to be expected in the cache
+ * .cacheWithInitialCapacity(9);
+ */
+```
 
