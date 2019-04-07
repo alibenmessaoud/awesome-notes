@@ -1993,7 +1993,8 @@ Observable<String> source02 =
  * Observer 1: Gamma
  * Observer 1: Delta
  * Observer 1: Epsilon
- * Observer 2: Alpha <- Observer 2 came in, it starts over like the first Observer, and another cache is built.
+ * Observer 2: Alpha <- Observer 2 came in, it starts over like the first Observer, and another 
+ * cache is built.
  * Observer 2: Beta     ==> may consider using autoConnect() to persist the  state of replay()
  * Observer 2: Gamma
  * Observer 2: Delta
@@ -2003,8 +2004,8 @@ Observable<String> source02 =
 
 ```java
 /**
- * to cache all emissions indefinitely for the long term and do not need to control the subscription behavior
- * to the source with ConnectableObservable, you can use the cache() operator.
+ * to cache all emissions indefinitely for the long term and do not need to control the subscription 
+ behavior to the source with ConnectableObservable, you can use the cache() operator.
  */
 
 Observable<Integer> cachedRollingTotals =
