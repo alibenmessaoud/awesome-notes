@@ -1168,3 +1168,327 @@ Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
  */
 ```
 
+##### Error Recovery
+
+```java
+Observable.just(5, 2, 4, 0, 3, 2, 8)
+        .map(i -> 10 / i)
+        .subscribe(
+                i -> System.out.println("RECEIVED: " + i),
+                e -> System.out.println("RECEIVED ERROR: " + e)
+        );
+
+/**
+ * RECEIVED: 2
+ * RECEIVED: 5
+ * RECEIVED: 2
+ * RECEIVED ERROR: java.lang.ArithmeticException: / by zero
+ */
+```
+
+```java
+Observable.just(5, 2, 4, 0, 3, 2, 8)
+        .map(i -> 10 / i)
+        .onErrorReturnItem(-1)
+        .subscribe(
+                i -> System.out.println("RECEIVED: " + i),
+                e -> System.out.println("RECEIVED ERROR: " + e)
+        );
+
+Observable.just(5, 2, 4, 0, 3, 2, 8)
+        .map(i -> 10 / i)
+        .onErrorReturn(e -> - 1)
+        .subscribe(
+                i -> System.out.println("RECEIVED: " + i),
+                e -> System.out.println("RECEIVED ERROR: " + e)
+        );
+
+/**
+ * RECEIVED: 2
+ * RECEIVED: 5
+ * RECEIVED: 2
+ * RECEIVED: -1
+ */
+
+Observable.just(5, 2, 4, 0, 3, 2, 8)
+        .onErrorReturn(e -> - 1)
+        .map(i -> 10 / i)
+        .subscribe(
+                i -> System.out.println("RECEIVED: " + i),
+                e -> System.out.println("RECEIVED ERROR: " + e)
+        );
+
+/**
+ * RECEIVED: 2
+ * RECEIVED: 5
+ * RECEIVED: 2
+ * RECEIVED ERROR: java.lang.ArithmeticException: / by zero
+ */
+```
+
+```java
+Observable.just(5, 2, 4, 0, 3, 2, 8)
+        .map(i -> {
+            try {
+                return 10 / i;
+            } catch (ArithmeticException e) {
+                return -1;
+            }
+        })
+        .subscribe(
+                i -> System.out.println("RECEIVED: " + i),
+                e -> System.out.println("RECEIVED ERROR: " + e)
+        );
+
+/**
+ * RECEIVED: 2
+ * RECEIVED: 5
+ * RECEIVED: 2
+ * RECEIVED: -1
+ * RECEIVED: 3
+ * RECEIVED: 5
+ * RECEIVED: 1
+ */
+```
+
+```java
+/**
+ * Similar to onErrorReturn() and onErrorReturnItem(), onErrorResumeNext() is very similar.
+ * The only difference is that it accepts another Observable as a parameter to emit potentially multiple
+ * values, not a single value, in the event of an exception.
+ */
+Observable.just(5, 2, 4, 0, 10)
+        .map(i -> 10 / i)
+        .onErrorResumeNext(Observable.just(-1).repeat(3))
+        .subscribe(i -> System.out.println("RECEIVED: " + i),
+                e -> System.out.println("RECEIVED ERROR: " + e)
+        );
+
+/**
+ * RECEIVED: 2
+ * RECEIVED: 5
+ * RECEIVED: 2
+ * RECEIVED: -1
+ * RECEIVED: -1
+ * RECEIVED: -1
+ */
+
+Observable.just(5, 2, 4, 0, 3, 2, 8)
+        .map(i -> 10 / i)
+        .onErrorResumeNext(Observable.empty())
+        .subscribe(i -> System.out.println("RECEIVED: " + i),
+                e -> System.out.println("RECEIVED ERROR: " + e)
+        );
+
+/**
+ * RECEIVED: 2
+ * RECEIVED: 5
+ * RECEIVED: 2
+ */
+
+Observable.just(5, 2, 4, 0, 3, 2, 8)
+        .map(i -> 10 / i)
+        .onErrorResumeNext(
+                (Throwable e) -> Observable.just(-1).repeat(3)
+        )
+        .subscribe(
+                i -> System.out.println("RECEIVED: " + i),
+                e -> System.out.println("RECEIVED ERROR: " + e)
+        );
+
+/**
+ * RECEIVED: 2
+ * RECEIVED: 5
+ * RECEIVED: 2
+ * RECEIVED: -1
+ * RECEIVED: -1
+ * RECEIVED: -1
+ */
+```
+
+```java
+/*Observable.just(5, 2, 4, 0, 3, 2, 8)
+        .map(i -> 10 / i)
+        .retry()
+        .subscribe(
+                i -> System.out.println("RECEIVED: " + i),
+                e -> System.out.println("RECEIVED ERROR: " + e)
+        );*/
+/**
+ * The output of the preceding code snippet is as follows:
+ *
+ * RECEIVED: 5
+ * RECEIVED: 2
+ * RECEIVED: 2
+ * RECEIVED: 5
+ * ...
+ */
+
+Observable.just(10, 0, 8)
+        .map(i -> 10 / i)
+        .retry(2)
+        .subscribe(
+                i -> System.out.println("RECEIVED: " + i),
+                e -> System.out.println("RECEIVED ERROR: " + e)
+        );
+/**
+ * RECEIVED: 1
+ * RECEIVED: 1
+ * RECEIVED: 1
+ * RECEIVED ERROR: java.lang.ArithmeticException: / by zero
+ */
+```
+
+##### Action Operations
+
+```java
+Observable.just("Alpha", "Beta")
+        .doOnNext(s -> System.out.println("Processing: " + s))
+        .doAfterNext(s -> System.out.println("Done with: " + s))
+        .doOnComplete(() -> System.out.println("Source is done emitting!"))
+        .map(String::length)
+        .subscribe(i -> System.out.println("Received: " + i));
+
+/**
+ * Processing: Alpha
+ * Received: 5
+ * Done with: Alpha
+ * Processing: Beta
+ * Received: 4
+ * Done with: Beta
+ * Source is done emitting!
+ */
+```
+
+```java
+/**
+ * And, of course, onError() will peek at the error being emitted up the chain, and you can perform 
+ an action with it.This can be helpful to put between operators to see which one is to blame for 
+ * an error:
+ */
+
+Observable.just(5, 2, 4, 0, 3, 2, 8)
+        .doOnError(e -> System.out.println("Source failed!"))
+        .map(i -> 10 / i)
+        .doOnError(e -> System.out.println("Division failed!"))
+        .subscribe(i -> System.out.println("RECEIVED: " + i),
+                e -> System.out.println("RECEIVED ERROR: " + e)
+        );
+
+/**
+ * RECEIVED: 2
+ * RECEIVED: 5
+ * RECEIVED: 2
+ * Division failed!
+ * RECEIVED ERROR: java.lang.ArithmeticException: / by zero
+ */
+
+/**
+ * You can specify all three actions for onNext(), onComplete(), and onError() using doOnEach() as well.
+ */
+```
+
+```java
+Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
+        .doOnSubscribe(d -> System.out.println("Subscribing!"))
+        .doOnDispose(() -> System.out.println("Disposing!"))
+        .subscribe(i -> System.out.println("RECEIVED: " + i));
+
+/**
+ * Subscribing!
+ * RECEIVED: Alpha
+ * RECEIVED: Beta
+ * RECEIVED: Gamma
+ * RECEIVED: Delta
+ * RECEIVED: Epsilon
+ * Disposing!
+ */
+
+Observable.just(5, 3, 7, 10, 2, 14)
+        .reduce((total, next) -> total + next)
+        .doOnSuccess(i -> System.out.println("Emitting: " + i))
+        .subscribe(i -> System.out.println("Received: " + i));
+
+/**
+ * Emitting: 41
+ * Received: 41
+ */
+```
+
+##### Combine
+
+```java
+Observable<String> source1 = Observable.just("Alpha", "Beta", "Gamma");
+Observable<String> source2 = Observable.just("Delta", "Epsilon");
+
+Observable
+        .merge(source1, source2)
+        .subscribe(i -> System.out.println("RECEIVED: " + i));
+
+/**
+ * RECEIVED: Alpha
+ * RECEIVED: Beta
+ * RECEIVED: Gamma
+ * RECEIVED: Delta
+ * RECEIVED: Epsilon
+ */
+System.out.println("---------");
+
+source1
+        .mergeWith(source2)
+        .subscribe(i -> System.out.println("RECEIVED: " + i));
+
+System.out.println("---------");
+
+Observable.concat(source1, source2)
+        .subscribe(i -> System.out.println("RECEIVED: " + i));
+
+System.out.println("---------");
+
+Observable.mergeArray(source1, source2, source1)
+        .subscribe(i -> System.out.println("RECEIVED: " + i));
+
+System.out.println("---------");
+
+Observable.merge(List.of(source1, source2, source1))
+        .subscribe(i -> System.out.println("RECEIVED: " + i));
+
+/**
+RECEIVED: Alpha
+RECEIVED: Beta
+RECEIVED: Gamma
+RECEIVED: Delta
+RECEIVED: Epsilon
+---------
+RECEIVED: Alpha
+RECEIVED: Beta
+RECEIVED: Gamma
+RECEIVED: Delta
+RECEIVED: Epsilon
+---------
+RECEIVED: Alpha
+RECEIVED: Beta
+RECEIVED: Gamma
+RECEIVED: Delta
+RECEIVED: Epsilon
+---------
+RECEIVED: Alpha
+RECEIVED: Beta
+RECEIVED: Gamma
+RECEIVED: Delta
+RECEIVED: Epsilon
+RECEIVED: Alpha
+RECEIVED: Beta
+RECEIVED: Gamma
+---------
+RECEIVED: Alpha
+RECEIVED: Beta
+RECEIVED: Gamma
+RECEIVED: Delta
+RECEIVED: Epsilon
+RECEIVED: Alpha
+RECEIVED: Beta
+RECEIVED: Gamma
+**/
+```
+
