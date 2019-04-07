@@ -961,3 +961,209 @@ Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
  */
 ```
 
+##### Reduce operation
+
+```java
+Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
+        .count()
+        .subscribe(s -> System.out.println("Received: " + s));
+/**
+ * Received: 5
+ */
+```
+
+```java
+Observable.just(5, 3, 7, 10, 2, 14)
+        .reduce((total, next) -> total + next)
+        .subscribe(s -> System.out.println("Received: " + s));
+
+/**
+ * Received: 41
+ */
+```
+
+```java
+/**
+ * Similar to scan(), there is a seed argument that you can provide that will serve as the initial
+ * value to accumulate on.
+ */
+
+Observable.just(5, 3, 7, 10, 2, 14)
+        .reduce("", (total, next) -> total + (total.equals("") ? "" : ",") +  next)
+        .subscribe(s -> System.out.println("Received: " + s));
+
+/**
+ * Received: 5,3,7,10,2,14
+ */
+```
+
+```java
+Observable.just(5, 3, 7, 11, 2, 14)
+        .all(i -> i < 10)
+        .subscribe(s -> System.out.println("Received: " + s));
+
+/**
+ * Received: false
+ */
+
+/**
+ * When the all() operator encountered 11, it immediately emitted False and called onComplete().
+ */
+```
+
+```java
+Observable.just("2016-01-01", "2016-05-02", "2016-09-12",
+        "2016-04-03")
+        .map(LocalDate::parse)
+        .any(dt -> dt.getMonthValue() >= 6)
+        .subscribe(s -> System.out.println("Received: " + s));
+
+/**
+ * Received: true
+ */
+
+/**
+ * When it encountered the 2016-09-12 date, it immediately emitted true and called onComplete().
+ * It did not proceed to process 2016-04-03.
+ */
+```
+
+```java
+Observable.range(1,10000)
+        .contains(9563)
+        .subscribe(s -> System.out.println("Received: " + s));
+
+/**
+ * Received: true
+ */
+
+/**
+ * As you can probably guess, the moment the element is found, it will emit true and call onComplete() 
+ * and dispose of the operation.
+ * If the source calls onComplete() and the element was not found, it will emit false.
+ */
+```
+
+##### Collecting
+
+```java
+Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
+        .toList()
+        .subscribe(s -> System.out.println("Received: " + s));
+
+/**
+ * Received: [Alpha, Beta, Gamma, Delta, Epsilon]
+ */
+
+
+/**
+ * By default, toList() will use a standard ArrayList implementation.
+ */
+Observable.range(1,1000)
+        .toList(1000)
+        .subscribe(s -> System.out.println("Received: " + s));
+
+
+/**
+ * If you want to specify a different list implementation besides ArrayList,
+ * you can provide a Callable lambda as an argument to construct one.
+ */
+
+Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
+        .toList(CopyOnWriteArrayList::new)
+        .subscribe(s -> System.out.println("Received: " + s));
+```
+
+```java
+/**
+ * A different flavor of toList() is toSortedList().
+ * This will collect the emissions into a list that sorts the items naturally based on their 
+ * Comparator implementation. Then, it will emit that sorted List<T> forward to the Observer
+ */
+
+Observable.just(6, 2, 5, 7, 1, 4, 9, 8, 3)
+        .toSortedList()
+        .subscribe(s -> System.out.println("Received: " + s));
+
+/**
+ * Received: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+ */
+
+/**
+ * Like sorted(), you can provide a Comparator as an argument to apply a different sorting logic.
+ * You can also specify an initial capacity for the backing ArrayList just like toList().
+ */
+```
+
+```java
+/**
+ * the toMap() operator will collect emissions into Map<K,T>,
+ * where K is the key type derived off a lambda Function<T,K> argument producing the key for each emission.
+ */
+
+Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
+        .toMap(s -> s.charAt(0)).subscribe(s -> System.out.println("Received: " + s));
+
+/**
+ * Received: {A=Alpha, B=Beta, D=Delta, E=Epsilon, G=Gamma}
+ */
+
+/**
+ * To yield a different value other than the emission to associate with the key,
+ * provide a second lambda argument that maps each emission to a different value:
+ */
+
+Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
+        .toMap(s -> s.charAt(0), String::length)
+        .subscribe(s -> System.out.println("Received: " + s));
+
+/**
+ * Received: {A=5, B=4, D=5, E=7, G=5}
+ */
+
+/**
+ * By default, toMap() will use HashMap. We can use an other map implementation
+ */
+Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
+        .toMap(s -> s.charAt(0), String::length, ConcurrentHashMap::new)
+        .subscribe(s -> System.out.println("Received: " + s));
+
+
+/**
+ * if I have a key that maps to multiple emissions, the last emission for that key is going 
+ * to replace subsequent ones.
+ */
+Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
+        .toMap(String::length)
+        .subscribe(s -> System.out.println("Received: " + s));
+
+/**
+ * Received: {4=Beta, 5=Delta, 7=Epsilon}
+ */
+
+/**
+ * Use toMultiMap() to make a key map to multiple emissions
+ */
+Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
+        .toMultimap(String::length)
+        .subscribe(s -> System.out.println("Received: " + s));
+/**
+ * Received: {4=[Beta], 5=[Alpha, Gamma, Delta], 7=[Epsilon]}
+ */
+```
+
+```java
+/**
+ * use the collect() operator to specify a different type to collect items into:
+ * -> Specify two arguments that are built with lambda expressions: initialValueSupplier, 
+ * and method to use:
+ */
+Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
+        .collect(HashSet::new, HashSet::add)
+        .subscribe(s -> System.out.println("Received: " + s));
+
+/**
+ * Received: [Gamma, Delta, Alpha, Epsilon, Beta]
+ */
+```
+
