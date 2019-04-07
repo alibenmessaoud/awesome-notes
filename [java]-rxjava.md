@@ -345,7 +345,11 @@ Observable.fromFuture(futureValue).map(String::length).subscribe(System.out::pri
  * Emits nothing and calls onComplete():
  */
 Observable<String> empty = Observable.empty();
-empty.subscribe(System.out::println, error -> System.out.println(error), () -> System.out.println("Done!"));
+empty.subscribe(
+    System.out::println, 
+    error -> System.out.println(error), 
+    () -> System.out.println("Done!")
+);
 
 /**
  * Done!
@@ -360,7 +364,11 @@ empty.subscribe(System.out::println, error -> System.out.println(error), () -> S
  */
 Observable<String> empty = Observable.never();
 
-empty.subscribe(System.out::println, e -> System.out.println(e), () -> System.out.println("Done!"));
+empty.subscribe(
+    System.out::println, 
+    e -> System.out.println(e), 
+    () -> System.out.println("Done!")
+);
 
 /**
  * This Observable is primarily used for testing and not that often in production.
@@ -393,11 +401,14 @@ Observable.error(() -> new Exception("Crash and burn!"));
 
 ```java
 /**
- * Observable.defer() is a powerful factory due to its ability to create a separate state for each Observer.
- * When using certain Observable factories, you may run into some nuances if your source is stateful
- * and you want to create a separate state for each Observer. Your source Observable may not capture something
- * that has changed about its parameters and send emissions that are obsolete. Here is a simple example:
- * we have an Observable.range() built off two static int properties, start and count.
+ * Observable.defer() is a powerful factory due to its ability to create
+ * a separate state for each Observer.
+ * When using certain Observable factories, you may run into some nuances 
+ * if your source is stateful and you want to create a separate state for 
+ * each Observer. Your source Observable may not capture something
+ * that has changed about its parameters and send emissions that are obsolete. 
+ * Here is a simple example: we have an Observable.range() built off two static
+ * int properties, start and count.
  */
 
 Observable<Integer> source = Observable.range(start, count);
@@ -461,7 +472,8 @@ There are a few specialized flavors of Observable that are explicitly set up for
 ```java
 /**
  * Single<T> is essentially an Observable<T> that will only emit one item.
- * It works just like an Observable, but it is limited only to operators that make sense for a single emission.
+ * It works just like an Observable, but it is limited only to operators that make sense 
+ * for a single emission.
  * It has its own SingleObserver interface as well:
  *
  * interface SingleObserver<T> {
@@ -515,10 +527,18 @@ nil.subscribe(System.out::println, System.out::println);
  */
 
 // has emission
-Maybe.just(100).subscribe(s -> System.out.println("Process 1 received: " + s), Throwable::printStackTrace, () -> System.out.println("Process 1 done!"));
+Maybe.just(100).subscribe(
+    s -> System.out.println("Process 1 received: " + s), 
+    Throwable::printStackTrace, 
+    () -> System.out.println("Process 1 done!")
+);
 
 //no emission
-Maybe.empty().subscribe(s -> System.out.println("Process 2 received: " + s), Throwable::printStackTrace, () -> System.out.println("Process 2 done!"));
+Maybe.empty().subscribe(
+    s -> System.out.println("Process 2 received: " + s), 
+    Throwable::printStackTrace, 
+    () -> System.out.println("Process 2 done!")
+);
 
 /**
  * Process 1 received: 100
@@ -528,7 +548,8 @@ Maybe.empty().subscribe(s -> System.out.println("Process 2 received: " + s), Thr
 
 ```java
 /**
- * the firstElement() operator, which is similar to first(), but it returns an empty result if no elements are emitted:
+ * the firstElement() operator, which is similar to first(), but it returns an empty 
+ * result if no elements are emitted:
  */
 
 Maybe<String> stringMaybe = Observable.just("Alpha","Beta","Gamma","Delta","Epsilon").firstElement();
@@ -546,7 +567,8 @@ stringMaybe.subscribe(
 ```java
 /**
  * Completable is simply concerned with an action being executed, but it does not receive any emissions.
- * Logically, it does not have onNext() or onSuccess() to receive emissions, but it does have onError() and onComplete():
+ * Logically, it does not have onNext() or onSuccess() to receive emissions, 
+ * but it does have onError() and onComplete():
  *
  * interface CompletableObserver<T> {
  *     void onSubscribe(Disposable d);
