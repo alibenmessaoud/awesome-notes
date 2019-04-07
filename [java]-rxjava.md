@@ -689,3 +689,275 @@ Observable<Integer> source = Observable.create(observableEmitter -> {
 source.subscribe(System.out::println);
 ```
 
+##### Basic operations
+
+```java
+/**
+ * The  filter() operator accepts Predicate<T> for a given Observable<T>
+ * This means that you provide it a lambda that qualifies each emission by mapping it to a Boolean value,
+ * and emissions with false will not go forward.
+ */
+Observable
+        .just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
+        .filter(s -> s.length() != 5)
+        .subscribe(s -> System.out.println("RECEIVED: " + s));
+```
+
+```java
+/**
+ * The take() operator has two overloads.
+ * One will take a specified number of emissions and then call  onComplete() after it captures all of them.
+ * It will also dispose of the entire subscription so that no test emissions will occur.
+ */
+Observable
+        .just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
+        .take(3)
+        .subscribe(s -> System.out.println("RECEIVED: " + s));
+
+/**
+ * Note that if you receive fewer emissions than you specify in your take() function, it will simply
+ * emit what it does get and then call the onComplete() function.
+ */
+Observable.just("Alpha").take(3).subscribe(s -> System.out.println("RECEIVED: " + s));
+```
+
+```java
+/**
+ * The other overload will take emissions within a specific time duration and then call  onComplete().
+ * Just keep in mind that it will internally queue emissions until its onComplete() function is called,
+ * and then it can logically identify and emit the last emissions.
+ */
+Observable
+        .interval(300, TimeUnit.MILLISECONDS)
+        .take(2, TimeUnit.SECONDS)
+        .subscribe(i -> System.out.println("RECEIVED: " + i));
+
+sleep(5000);
+
+/**
+ * RECEIVED: 0
+ * RECEIVED: 1
+ * RECEIVED: 2
+ * RECEIVED: 3
+ * RECEIVED: 4
+ * RECEIVED: 5
+ */
+
+System.out.println("----------------");
+
+Observable.just(100, 200, 300, 400).takeLast(2).subscribe(i -> System.out.println("RECEIVED: " + i));
+```
+
+```java
+/**
+ * The skip() operator does the opposite of the take() operator.
+ * It will ignore the specified number of emissions and then emit the ones that follow.
+ */
+
+Observable.range(1,100).skip(90).subscribe(i -> System.out.println("RECEIVED: " + i));
+
+/**
+ * Just like the take() operator, there is also an overload accepting a time duration.
+ * There is also a skipLast() operator, which will skip the last specified number of items
+ * (or time duration) before the onComplete() event is called.
+ * Just keep in mind that the skipLast() operator will queue and delay emissions until it confirms
+ * the last emissions in that scope.
+ */
+```
+
+```java
+Observable
+        .range(1,100)
+        .takeWhile(i -> i <= 15)
+        .subscribe(i -> System.out.println("RECEIVED: " + i));
+
+Observable
+        .range(1,100)
+        .skipWhile(i -> i <= 95)
+        .subscribe(i -> System.out.println("RECEIVED: " + i));
+```
+
+```java
+Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
+        .map(String::length)
+        .distinct()
+        .subscribe(i -> System.out.println("RECEIVED: " + i));
+/**
+ * RECEIVED: 5
+ * RECEIVED: 4
+ * RECEIVED: 7
+ */
+
+Observable
+        .just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
+        .distinct(String::length)
+        .subscribe(i -> System.out.println("RECEIVED: " + i));
+
+/**
+ * RECEIVED: Alpha
+ * RECEIVED: Beta
+ * RECEIVED: Epsilon
+ */
+```
+
+```java
+Observable
+        .just(1, 1, 1, 2, 2, 3, 3, 2, 1, 1)
+        .distinctUntilChanged()
+        .subscribe(i -> System.out.println("RECEIVED: " + i));
+
+/**
+ * RECEIVED: 1
+ * RECEIVED: 2
+ * RECEIVED: 3
+ * RECEIVED: 2
+ * RECEIVED: 1
+ */
+
+Observable
+        .just("Alpha", "Beta", "Zeta", "Eta", "Gamma", "Delta")
+        .distinctUntilChanged(String::length)
+        .subscribe(i -> System.out.println("RECEIVED: " + i));
+
+/**
+ * RECEIVED: Alpha
+ * RECEIVED: Beta
+ * RECEIVED: Eta
+ * RECEIVED: Gamma
+ */
+```
+
+```java
+Observable
+        .just("Alpha", "Beta", "Zeta", "Eta", "Gamma", "Delta")
+        .elementAt(3)
+        .subscribe(i -> System.out.println("RECEIVED: " + i));
+```
+
+```java
+Observable
+        .just("1/3/2016", "5/9/2016", "10/12/2016")
+        .map(s -> LocalDate.parse(s, DateTimeFormatter.ofPattern("M/d/yyyy")))
+        .subscribe(i -> System.out.println("RECEIVED: " + i));
+
+/**
+ * RECEIVED: 2016-01-03
+ * RECEIVED: 2016-05-09
+ * RECEIVED: 2016-10-12
+ */
+```
+
+```java
+Observable<Object> one = Observable.just("Alpha", "Beta", "Gamma").map(s -> (Object) s);
+Observable<Object> two = Observable.just("Alpha", "Beta", "Gamma").cast(Object.class);
+```
+
+```java
+Observable
+        .just("Coffee", "Tea", "Espresso", "Latte")
+        .startWith("MENU:")
+        .subscribe(System.out::println);
+
+Observable
+        .just("Coffee", "Tea", "Espresso", "Latte")
+        .startWithArray("MENU","----------------")
+        .subscribe(System.out::println);
+```
+
+```java
+Observable.just("Alpha","Beta","Gamma","Delta","Epsilon")
+        .filter(s -> s.startsWith("Z"))
+        .defaultIfEmpty("None")
+        .subscribe(System.out::println);
+/**
+ * None
+ */
+```
+
+```java
+Observable
+        .just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
+        .filter(s -> s.startsWith("Z"))
+        .switchIfEmpty(Observable.just("Zeta", "Eta", "Theta"))
+        .subscribe(
+                i -> System.out.println("RECEIVED: " + i),
+                e -> System.out.println("RECEIVED ERROR: " + e)
+        );
+/**
+ * RECEIVED: Zeta
+ * RECEIVED: Eta
+ * RECEIVED: Theta
+ */
+```
+
+```java
+Observable
+        .just(6, 2, 5, 7, 1, 4, 9, 8, 3)
+        .sorted().subscribe(System.out::println);
+
+Observable
+        .just(6, 2, 5, 7, 1, 4, 9, 8, 3)
+        .sorted(Comparator.reverseOrder())
+        .subscribe(System.out::println);
+
+Observable
+        .just("Alpha", "Beta", "Gamma" ,"Delta", "Epsilon")
+        .sorted((x,y) -> Integer.compare(x.length(), y.length())) //sorted(Comparator.comparingInt(String::length))
+        .subscribe(System.out::println);
+
+Observable
+        .just("Alpha", "Beta", "Gamma" ,"Delta", "Epsilon")
+        .sorted(Comparator.comparingInt(String::length))
+        .subscribe(System.out::println);
+```
+
+```java
+/**
+ * We can postpone emissions using the delay() operator.
+ */
+Observable
+        .just("Alpha", "Beta", "Gamma" ,"Delta", "Epsilon")
+        .delay(3, TimeUnit.SECONDS)
+        .subscribe(s -> System.out.println("Received: " + s));
+sleep(5000);
+```
+
+```java
+Observable
+        .just("Alpha", "Beta", "Gamma" ,"Delta", "Epsilon")
+        .repeat(2)
+        .subscribe(s -> System.out.println("Received: " + s));
+```
+
+```java
+/**
+ * The scan() method is a rolling aggregator.
+ */
+
+Observable.just(5, 3, 7, 10, 2, 14)
+        .scan((accumulator, next) -> accumulator + next)
+        .subscribe(s -> System.out.println("Received: " + s));
+
+/**
+ * Received: 5
+ * Received: 8
+ * Received: 15
+ * Received: 25
+ * Received: 27
+ * Received: 41
+ */
+
+Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
+        .scan(0, (total, next) -> total + 1)
+        .subscribe(s -> System.out.println("Received: " + s));
+
+/**
+ * Received: 0
+ * Received: 1
+ * Received: 2
+ * Received: 3
+ * Received: 4
+ * Received: 5
+ */
+```
+
