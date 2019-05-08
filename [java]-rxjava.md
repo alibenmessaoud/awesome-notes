@@ -1956,8 +1956,9 @@ sleep(3000);
 
 /**
  * Note that if you always want to persist the cached values in your replay() even if there are
- * no subscriptions, use it in conjunction with autoConnect(), not refCount() => you may consider using
- * autoConnect() to persist the  state of replay() and not have it dispose of when no Observers are present.
+ * no subscriptions, use it in conjunction with autoConnect(), not refCount() 
+ * => you may consider using autoConnect() to persist the  state of replay() and not have it 
+ dispose of when no Observers are present.
  */
 
 Observable<String> source01 =
