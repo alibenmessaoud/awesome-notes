@@ -144,3 +144,9 @@ Fully delete a database:
 
 Show all current operations/queries/syncs: `db.currentOp();`
 
+### Tools
+
+https://mongoplayground.net/ to test pipelines online 
+`docker run -p 27017:27017 -d -v mongodir:/data/bin mongo` to create a new DB based on a docker container and sharing data with a local directory called `mongodir`
+`Robo3t` the professional GUI and IDE for MongoDB to access content
+
