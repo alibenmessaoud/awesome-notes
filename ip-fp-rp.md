@@ -187,9 +187,7 @@ Listing 5
 
 The code in Listing 4 adds elements to a list, checks the parity of each element and add 0.5 if the last condition if true. Please pay attention when adding element to the list after performing the checks are omitted. In Listing 5, the output continued to show results after declaring the behavior and pushing new elements to the list.
 
-​	Embracing more than one style in your projects can help you to learn and do more but you have to admit that none style solves all problems most easily or efficiently but with these styles your code will be short, easier to read and understand. The challenge is to change your ways of reasoning from the imperative style - which is common to a large number of developers - to think declaratively, functionally and reactively. Next steps are to start learning to focus on what you want your programs to do, rather than how you want it done. By allowing the underlying library or platform of each style to manage execution, you will intuitively get to know the building blocks of each style programming.
-
-
+​	Adopting one or several styles in your projects can help you to discover and do more: your code will be short, more comfortable to read and understand. The challenge is to adjust your manners of thinking from the imperative style - which is well-known by a large number of developers - to think declaratively, functionally and reactively. The next moves are to begin learning to focus on what you want your programs to do, rather than how you need it done. By letting the underlying library or platform of each style to manage execution, you will intuitively get to know the building blocks of each programming style.
 
 ### Resources
 
