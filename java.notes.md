@@ -15,3 +15,4 @@ Fibers: similar to green threads. The big difference between green threads and f
 > Loom: add fibers to the JVM itself, rather than as an add-on library. 
 
 Co-Routines: Co-routines are an alternative to threading and fibers. We can think of co-routines as fibers without any form of scheduling. Instead of the underlying system deciding which tasks are performing at any time, our code does this directly. Generally, we write co-routines so that they yield at specific points of their flow. These can be seen as pause points in our function, where it will stop working and potentially output some intermediate result. When we do yield, we are then stopped until the calling code decides to re-start us for whatever reason. This means that our calling code controls the scheduling of when this will run.
+
