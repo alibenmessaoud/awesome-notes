@@ -75,3 +75,27 @@ We are not machines of codes. Eat healthy, exercise and even the gadgets that wi
 
 
 
+# 16 Don'ts of Career Growth
+
+16 Don'ts of Career Growth by [Yegor Bugayenko](http://www.yegor256.com). I keep this article in my browser favourite links since 2017 and I have tried to read it when the eye comes on. 
+
+1. Don't Be Loyal: Be selfish; think only about yourself and your personal skills, knowledge, and experience.
+
+2. Don't Work: Make sure programming is your hobby, not your job. 
+3. Don't Make Friends: I'm talking about professional relationships in the office.
+4. Don't Be Helpful: It's Not a School! By helping people around you and solving their problems, you just cripple them — nothing else.
+5. Don't Ask for Help: Again, the same argument applies. There are million of users on the StackExchange platform. 
+
+6. Don't Waste Time: Stop the projects that are taking time and giving nothing back.
+
+7. Don't Skimp on Growth: You must invest into yourself. First of all, you have to buy books.
+8. Don't Work Full-Time: To grow and grow fast, you must always be challenged by new tasks, new teams, new projects, and new job interviews.
+
+9. Don't Be Cheap: My advice is to never pay attention to those cheap stories; demand cash, up front, as much as possible.
+10. Don't Be Skeptical About Certifications: Certifications help you formalize your knowledge, put borders around it, and remove gaps.
+11. Don't Ignore Management: It's not just wearing a suit. It's a science with a lot of rules, and best practices. You must study them and become very good at them.
+12. Don't Underestimate English: Most of my readers are not native English speakers, just like myself.
+13. Don't Ignore Open Source: It's a must. You either have your own open-source project or you actively contribute to an existing one.
+14. Don't Be Invisible: You must be present on the Internet.
+15. Don't Stay Home: Attend seminars, meetups, and software conferences.
+16. Don't Forget to Relax: sports, tourism, and night clubs. Be a normal person — that's the point.
