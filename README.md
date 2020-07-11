@@ -7,10 +7,3 @@ This repository is sort of a memento that I decided to create using Markdown and
 #### About me
 
 I'm Ali Ben Messaoud, a very passionate and curious computer scientist and software engineer who is always looking into new technologies, patterns, methodologies, and ideas to develop my ever-growing toolkit and progress as a professional. Some non-programming things to know about me. I live in the Paris area, I am a coffee snob. In closing, I hope you enjoyed this visit and see you soon :]
-
-##### Index
-
-
-
-
-
