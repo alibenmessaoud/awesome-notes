@@ -85,8 +85,9 @@ A pod is a sandbox to run multiple containers and contains a network, kernel nam
          |                        |
          |                        +
 +--------+-----------+            ...
-|                    |
-|                    |
+| +---+ +---+        |
+| |Pod| |Pod| ...    |
+| +---+ +---+        |
 | +---+ +---+ +---+  |
 | |Pod| |Pod| |Pod|  |
 | +---+ +---+ +---+  |
