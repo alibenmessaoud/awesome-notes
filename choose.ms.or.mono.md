@@ -24,7 +24,7 @@ In most practical use cases, a monolithic architecture would suffice.
 
 ## When to choose a microservice architecture
 
-the decision here is more complex unlike choosing a monolithic architecture:
+The decision here is more complex unlike choosing a monolithic architecture:
 
 - Market: time to market is NOT critical
 
