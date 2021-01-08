@@ -1,2 +1,0 @@
-# Named-entity recognition
-

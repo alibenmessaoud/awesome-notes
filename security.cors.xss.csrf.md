@@ -23,3 +23,10 @@ Attacker tricks user to execute script (by clicking on SPAM link in email or sim
 One of the most common pattern is usage of `CSRF token`.
 
 There is no protection on CSRF attack if your web application is XSS vulnerable!
+
+## CSP
+
+- Content Security Policy (CSP) is an **HTTP header** that allows site operators fine-grained control over where resources on their site can be loaded from.
+- The use of this header is the best method to prevent cross-site scripting (XSS) vulnerabilities.
+- Due to the difficulty in retrofitting CSP into existing websites, CSP is **mandatory** for all new websites and is strongly recommended for all existing high-risk sites.
+- [Read more](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)

@@ -125,21 +125,4 @@ as 2020, Svelte / Stencil / Angular elements / Polymers / Web components are exa
 - Cons for storage: not secure, limited to strings, danger for XSS
 - **Cookie**: stores data with expiration date, storage limit about 4KB, is sent to the server for each request, read/write on both client & server side (if HttpOnly then it is inaccessible to client-side scripts)
 
-## What is **Content Security Policy (CSP)**?
-
-- Content Security Policy (CSP) is an **HTTP header** that allows site operators fine-grained control over where resources on their site can be loaded from.
-- The use of this header is the best method to prevent cross-site scripting (XSS) vulnerabilities.
-- Due to the difficulty in retrofitting CSP into existing websites, CSP is **mandatory** for all new websites and is strongly recommended for all existing high-risk sites.
-- [Read more](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)
-
-## What is **Cross-Site Scripting (XSS)**?
-
-- Cross-Site Scripting (XSS) is an **attack** that occurs when an attacker uses a web application to send malicious code, generally in the form of a browser side script, to a different end user
-- The page provided by the server when someone requests it is unaltered; instead, an XSS attack exploits a **weakness** in a page that include a variable submitted in a request to show up in raw form in the response
-- [Read more about attacks](https://developer.mozilla.org/en-US/docs/Web/Security/Types_of_attacks#Cross-site_scripting_XSS)
-
-## What is **CORS (Cross-Origin Resource Sharing)**?
-
-- **Cross-Origin Resource Sharing** ([CORS](https://developer.mozilla.org/en-US/docs/Glossary/CORS)) is a **mechanism** that uses additional [HTTP](https://developer.mozilla.org/en-US/docs/Glossary/HTTP) headers to tell browsers to give a web application running at one [origin](https://developer.mozilla.org/en-US/docs/Glossary/origin), access to selected resources from a different origin
-- A web application executes a cross-origin HTTP request when it requests a resource that has a different **origin** (domain, protocol, or port) from its own
-- [Read more](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
+- https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)

@@ -31,8 +31,6 @@ Also, You don't have to master Linux but learn enough for the Docker. Take a loo
 
 ---
 
-
-
 # Orchestration (25%)
 
 1. **Which command do you use to create a new swarm?**
